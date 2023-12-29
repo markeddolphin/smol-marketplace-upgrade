@@ -1,0 +1,49 @@
+{
+  "name": "Neandersmol #1520",
+  "description": "Smol Age will tell the story of how the modern day Smolverse came to be. As ancestors of the space traveling monkeys, Smol Brains, Neandersmols will be the first generation in Smol Age.\n\nNeandersmols will develop, become productive members of civilization and finally retire before passing their skillsets and assets down to the next generation in Smol Age. 2739/3000",
+  "image": "",
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Yellow"
+    },
+    {
+      "trait_type": "Sky",
+      "value": "Moon"
+    },
+    {
+      "trait_type": "Land",
+      "value": "Cave"
+    },
+    {
+      "trait_type": "Neandersmol",
+      "value": "Calm"
+    },
+    {
+      "trait_type": "Skin",
+      "value": "None"
+    },
+    {
+      "trait_type": "Top",
+      "value": "None"
+    },
+    {
+      "trait_type": "Jewelry",
+      "value": "Cave Necklace"
+    },
+    {
+      "trait_type": "Face",
+      "value": "Blindfold"
+    },
+    {
+      "trait_type": "Hair",
+      "value": "Cavehair"
+    },
+    {
+      "trait_type": "Gender",
+      "value": "Male"
+    }
+  ],
+  "token_id": 1520,
+  "image_hash": "6e4ec707eb7c696b75febb1f5205884b5605cce2e28e13f5c3d934522be7e364"
+}

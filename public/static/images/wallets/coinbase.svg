@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.1" viewBox="0 0 383 383" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>Coinbase Wallet SDK</title>
+<defs>
+<rect id="a" width="383" height="383" rx="64"/>
+<linearGradient id="c" x1="50%" x2="50%" y2="100%">
+<stop stop-color="#2E66F8" offset="0"/>
+<stop stop-color="#124ADB" offset="1"/>
+</linearGradient>
+</defs>
+<g fill="none" fill-rule="evenodd">
+<mask id="b" fill="white">
+<use xlink:href="#a"/>
+</mask>
+<rect x=".5" y=".5" width="382" height="382" rx="64" stroke="#979797"/>
+<polygon points="0 0 383 0 383 384 0 384" fill="url(#c)" fill-rule="nonzero" mask="url(#b)"/>
+<path d="m60.107 191.57c0 73.394 59.498 132.89 132.89 132.89 73.394 0 132.89-59.497 132.89-132.89 0-73.393-59.497-132.89-132.89-132.89-73.393 0-132.89 59.497-132.89 132.89zm98.93-42.82c-4.893 0-8.859 3.966-8.859 8.859v67.922c0 4.893 3.966 8.86 8.859 8.86h67.922c4.893 0 8.859-3.967 8.859-8.86v-67.922c0-4.893-3.966-8.859-8.859-8.859h-67.922z" fill="#fff"/>
+</g>
+</svg>

@@ -1,0 +1,336 @@
+import {
+  ANIMALS,
+  ARBITRUM,
+  CONSUMABLES,
+  SHOP,
+  SMOL_AGE_ADDRESS,
+  SMOL_AGE_BONES,
+  NFT_MARKET_PLACE,
+} from '@config';
+import { BigNumber, Contract, ethers } from 'ethers';
+import Image from 'next/image';
+import Link from 'next/link';
+import { cn } from '@utils';
+import { Animal, NFTObject, ListingStatus } from '@model/model';
+import { Phase2Context } from '@context/phase2Context';
+import { useAccount, useNetwork, useSigner } from 'wagmi';
+import { useContext, useState, useEffect, useMemo } from 'react';
+import useMarketOfferModal from '@hooks/useMarketOfferModal';
+import useListingModal from '@hooks/useListingModal';
+import { MarketOfferModal } from '@components/modals/MarketOfferModal';
+import { ListingModal } from '@components/modals/ListingModal';
+import { ERC1155__factory, NeanderSmol__factory } from '@typechain';
+import { useEffectOnce } from 'react-use';
+import { toast } from 'react-toastify';
+import { animals, consumables } from '@components/phase2/labor-grounds/MyStakes';
+import { useBalanceERC1155, useBalanceERC20, useBalancesERC1155 } from '@hooks/useBalance';
+import { BuyItemParamsStruct } from '@typechain/NFTMarketPlace';
+import { TokenType } from '@model/model';
+import {
+  useApproveERC721,
+  useIsApprovedERC721,
+  useApproveERC20,
+  useAllowance,
+} from '@hooks/useApprove';
+
+export const AnimalExplorer = () => {
+  const tabs = ['All', 'Listed'];
+  const [activeTab, setActiveTab] = useState('All');
+
+  const { address } = useAccount();
+  const { chain } = useNetwork();
+  const marketOfferModal = useMarketOfferModal();
+  const listModal = useListingModal();
+  const chainId = !chain || chain?.unsupported ? ARBITRUM : chain?.id;
+
+  const { nfts, listings, getListings } = useContext(Phase2Context);
+
+  const [selected, setSelected] = useState<BigNumber[]>();
+  const [clicked, setClicked] = useState<BigNumber[]>();
+  const [ownAddress, setOwnAddress] = useState('');
+  const [listStatus, setListStatus] = useState('');
+  const [selectedId, setSelectedId] = useState('');
+  const [selectedQuantity, setSelectedQuantity] = useState(0);
+  const [selectedOfferprice, setSelectedOfferprice] = useState(0);
+  const [balance, setBalance] = useState(0);
+  // const [activeExploreTab, setActiveExplorerTab] = useState<ExploreTab>(ExploreTab.All);
+
+  const { data: signerData } = useSigner();
+  const { cancelListing } = useContext(Phase2Context);
+
+  const nftAddress = SMOL_AGE_ADDRESS[chainId];
+  const animalNftAddress = ANIMALS[chainId];
+  const consumableNftAddress = CONSUMABLES[chainId];
+
+  const getTotalSupply = async () => {
+    const contract = await new Contract(
+      SMOL_AGE_ADDRESS[chainId],
+      ERC1155__factory.abi,
+      signerData,
+    );
+    if (!contract) {
+      const balance = await contract.totalSupply();
+      return balance.toNumber();
+    }
+    return 0;
+  };
+
+  const tokenType = ['neander', 'animal', 'consumable']; //  0: neander, 1: animal, 2:consumable
+
+  useEffect(() => {
+    if (activeTab == 'Listed') {
+      getListings();
+    }
+  }, [activeTab]);
+
+  // useEffect(() => {
+  //   const a = async () => {
+  //     const totalSupply = await getTotalSupply();
+  //     console.log('total supply: => ', totalSupply.toNumber());
+  //   };
+  //   a();
+  // }, []);
+
+  const {
+    data: animalBalances,
+    isRefetching: isRefetchingAnimal,
+    refetch: refetchAnimalBalances,
+  } = useBalancesERC1155(
+    ANIMALS[chainId],
+    Array(animals.length).fill(address),
+    animals.map((animal) => animal.id),
+  );
+
+  const handleClick = (
+    ids: any,
+    owner: any,
+    listStatus: any,
+    selectedId: any,
+    quantity: any,
+    price: any,
+  ) => {
+    setClicked(ids);
+    setOwnAddress(owner);
+    setListStatus(listStatus);
+    setSelectedId(selectedId);
+    setSelectedQuantity(quantity);
+    setSelectedOfferprice(price);
+    marketOfferModal.onOpen();
+  };
+
+  const handleCancel = async (id: any) => {
+    try {
+      await cancelListing(id);
+      // const updatedListings = listings2.filter(nft => nft.id !== id);
+      // setListings2(updatedListings);
+    } catch (error) {
+      toast.error('Something went wrong.');
+    }
+  };
+
+  const [price, setPrice] = useState<BigNumber>(BigNumber.from(0));
+  const { approve: approveSupply } = useApproveERC20(
+    SMOL_AGE_BONES[chainId],
+    NFT_MARKET_PLACE[chainId],
+    BigNumber.from(price).mul(BigNumber.from(10).pow(18)),
+  );
+  const { data: allowance } = useAllowance(
+    SMOL_AGE_BONES[chainId],
+    address,
+    NFT_MARKET_PLACE[chainId],
+  );
+  const { buyItems } = useContext(Phase2Context);
+
+  const handleBuy = async (id: string) => {
+    try {
+      const myParams: BuyItemParamsStruct = {
+        listingId: id,
+        paymentToken: SMOL_AGE_BONES[chainId],
+        usingEth: false,
+      };
+
+      if (allowance.lt(BigNumber.from(price).mul(BigNumber.from(10).pow(18)))) {
+        await approveSupply();
+      }
+      await buyItems([myParams]);
+    } catch (error) {
+      toast.error('Something went wrong.');
+    }
+  };
+
+  const truncateString = (str, maxLength) => {
+    return str.length > maxLength ? str.slice(0, maxLength) + '...' : str;
+  };
+
+  return (
+    <>
+      <div className="relative min-h-screen bg-[url('/static/images/marketplace_landing.png')] bg-cover bg-center">
+        <MarketOfferModal
+          tokens={animals.filter((nft) => nft.id)}
+          listStatus={listStatus}
+          manType={ownAddress}
+          tokenType={tokenType[1]}
+          clickedId={selectedId}
+          listIds={clicked}
+          quantity={selectedQuantity}
+          offerprice={selectedOfferprice}
+        />
+        <ListingModal
+          tokens={animals.filter((nft) => selected?.includes(nft.id))}
+          tokenType={tokenType[1]}
+          balance={balance}
+        />
+        <div className="mx-auto max-w-6xl px-4 py-6 pt-[140px] max-md:relative sm:px-8">
+          <div className="relative w-full bg-black/40 p-4 pb-4 sm:p-6">
+            <Link href="/marketplace">
+              <Image
+                src="/static/images/back.png"
+                height={200}
+                width={200}
+                alt="Back Button"
+                className="absolute left-[-20px] top-1/2 w-[60px] -translate-y-1/2"
+              />
+            </Link>
+
+            <div className="head-line mb-6">
+              <p className="my-2 text-center text-2xl">Animals</p>
+              <div className="over-right relative mb-6 w-full text-center">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    className={`btn btn--primary ml-1 w-[150px] ${
+                      activeTab === tab
+                        ? 'border-smolBrow bg-smolBrownAlternative outline-none'
+                        : ''
+                    }`}
+                    onClick={() => setActiveTab(tab)}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+              <p className="text-center text-[10px]">All pricing is in $BONES</p>
+            </div>
+
+            <div className="border-line mb-4 mt-6 grid max-h-[45vh] grid-cols-3 gap-4 overflow-y-auto pb-4 pt-4 sm:grid-cols-4 md:grid-cols-5">
+              {activeTab == 'All' &&
+                animalBalances &&
+                animals.map((nft, index) => {
+                  const isSelected = selected?.includes(nft.id);
+                  return (
+                    <div className="mx-auto text-center" key={index}>
+                      <p className="text-center text-xs uppercase">{nft.name}</p>
+                      <button
+                        key={nft.id.toString()}
+                        className={cn(
+                          isSelected ? 'border-smolBrownLight' : 'border-black',
+                          'btn mx-auto mt-2',
+                        )}
+                        onClick={() => {
+                          setBalance(animalBalances[index].toNumber());
+                          // If NFT is being on a listed, then it can't be selected.
+                          if (selected?.includes(nft.id)) {
+                            setSelected(selected.filter((id) => id !== nft.id));
+                          } else {
+                            setSelected([...(selected ?? []), nft.id]);
+                          }
+                        }}
+                      >
+                        <>
+                          <Image
+                            src={nft.image}
+                            alt={`animal #${nft.id.toString()}`}
+                            width={140}
+                            height={140}
+                            className="rounded-lg"
+                          />
+                        </>
+                      </button>
+                      <p className="text-xs uppercase">{animalBalances[index]?.toNumber() ?? 0}</p>
+                    </div>
+                  );
+                })}
+              {activeTab == 'Listed' &&
+                listings
+                  .filter((nft) => nft.nftAddress == animalNftAddress.toLowerCase())
+                  .map((nft, index) => {
+                    return (
+                      <div className="mx-auto text-center" key={index}>
+                        <p className="text-center text-xs uppercase">({nft.quantity})</p>
+                        <button
+                          key={nft.id.toString()}
+                          className="btn token-btn mx-auto mt-2 border-black"
+                          onClick={() => {
+                            // marketOfferModal.onOpen()
+                            handleClick(
+                              nft.tokenIds,
+                              nft.owner,
+                              nft.status,
+                              nft.id,
+                              nft.quantity,
+                              BigNumber.from(nft.price).div(BigNumber.from(10).pow(18)).toString(),
+                            );
+                          }}
+                        >
+                          <Image
+                            src={nft.image}
+                            alt={`animal #${nft.id}`}
+                            width={140}
+                            height={140}
+                            className="rounded-lg"
+                          />
+                        </button>
+                        <p className="py-1 text-xs uppercase">
+                          Offer:{' '}
+                          {BigNumber.from(nft.price).div(BigNumber.from(10).pow(18)).toString()}
+                        </p>
+                        {/* <p className="text-xs uppercase">Offer: 5,000</p> */}
+
+                        {nft.owner == address.toLowerCase() ? (
+                          <button
+                            className="btn mt-3 rounded-xl text-[10px] outline-none"
+                            onClick={() => {
+                              handleCancel(String(nft.id));
+                            }}
+                          >
+                            Cancle
+                          </button>
+                        ) : (
+                          <button
+                            className="btn mt-3 rounded-xl bg-red-800/90 text-[10px] outline-none"
+                            onClick={() => {
+                              setPrice(nft.price);
+                              handleBuy(String(nft.id));
+                            }}
+                          >
+                            BUY NOW
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+            </div>
+
+            {selected?.length > 0 && (
+              <div className="text-right">
+                <p className="mb-2">{selected.length} SELECTED</p>
+                <button
+                  className="btn ml-[10px] w-[180px] bg-smolBrown outline-none"
+                  onClick={() => {
+                    selected.length == 1
+                      ? listModal.onOpen()
+                      : toast.warning('You can create an list for only ONE NFT.');
+                  }}
+                >
+                  CREATE LISTING
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default AnimalExplorer;
