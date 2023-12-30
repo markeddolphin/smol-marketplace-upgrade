@@ -177,26 +177,33 @@ export const NeanderExplorer = () => {
                   </button>
                 ))}
               </div>
-              <p className="text-center text-[10px]">All pricing is in $BONES</p>
+              <p className="text-center mt-2 text-[10px]">All pricing is in $BONES</p>
               
               {histories.length == 0 ?
-                <div className="mt-2">
-                  <p className="text-right text-[10px]">BONES: {0}</p>
-                  <p className="text-right text-[10px]">SMOL: {0}</p>
-                  <p className="text-right text-[10px]">MAGIC: {0}</p>
-                </div>:
-                histories.map((history, i) => {
-                  <div className="mt-2" key={'history_' + i}>
-                    history.paymentToken == SMOL_AGE_BONES[chainId]
-                    ? setBone(bone + BigNumber.from(history.price).div(BigNumber.from(10).pow(BigNumber.from(8))).toNumber())
-                    : history.paymentToken == SMOL_AGE_SMOL[chainId]
-                    ? setSmol(smol + BigNumber.from(history.price).div(BigNumber.from(10).pow(BigNumber.from(8))).toNumber())
-                    : setMagic(magic + BigNumber.from(history.price).div(BigNumber.from(10).pow(BigNumber.from(8))).toNumber())
- 
-                    <p className="text-right text-[10px]">BONES: {bone}</p>
-                    <p className="text-right text-[10px]">SMOL: {smol}</p>
-                    <p className="text-right text-[10px]">MAGIC: {magic}</p>
+                <fieldset className="text-center mt-2 field-set">
+                  <legend className="text-[12px]">Total Volume</legend>
+                  <div className="mt-2 mb-2">
+                    <p className="text-left ml-4 text-[10px]">BONES: {0}</p>
+                    <p className="text-left ml-4 text-[10px]">SMOL: {0}</p>
+                    <p className="text-left ml-4 text-[10px]">MAGIC: {0}</p>
                   </div>
+                </fieldset>
+                :
+                histories.map((history, i) => {
+                  <fieldset className="text-center mt-2 field-set">
+                    <legend className="text-[12px]">Total Volume</legend>
+                    <div className="mt-2 mb-2" key={'history_' + i}>
+                      history.paymentToken == SMOL_AGE_BONES[chainId]
+                      ? setBone(bone + BigNumber.from(history.price).div(BigNumber.from(10).pow(BigNumber.from(8))).toNumber())
+                      : history.paymentToken == SMOL_AGE_SMOL[chainId]
+                      ? setSmol(smol + BigNumber.from(history.price).div(BigNumber.from(10).pow(BigNumber.from(8))).toNumber())
+                      : setMagic(magic + BigNumber.from(history.price).div(BigNumber.from(10).pow(BigNumber.from(8))).toNumber())
+  
+                      <p className="text-left ml-4 text-[10px]">BONES: {bone}</p>
+                      <p className="text-left ml-4 text-[10px]">SMOL: {smol}</p>
+                      <p className="text-left ml-4 text-[10px]">MAGIC: {magic}</p>
+                    </div>
+                  </fieldset>
               })}
             </div>
 
