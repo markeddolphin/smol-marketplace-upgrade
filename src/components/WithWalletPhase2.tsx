@@ -108,6 +108,17 @@ const offerQuery = `query($status: String!) {
   }
 }`;
 
+const historyQuery = `query {
+  histories(orderBy: id) {
+    id
+    listingId
+    buyer
+    quantity
+    price
+    paymentToken
+  }
+}`;
+
 const WithWalletPhase2 = ({ children }: Props) => {
   const { chain } = useNetwork();
   const chainId = !chain || chain?.unsupported ? ARBITRUM : chain?.id;
@@ -119,6 +130,7 @@ const WithWalletPhase2 = ({ children }: Props) => {
   const [nfts, setNfts] = useState<NFTObject[]>([]);
   const [listings, setListings] = useState<NFTObject[]>([]);
   const [offers, setOffers] = useState<NFTObject[]>([]);
+  const [histories, setHistories] = useState<NFTObject[]>([]);
   const listingModal = useListingModal();
 
   useEffect(() => {
@@ -924,6 +936,36 @@ const WithWalletPhase2 = ({ children }: Props) => {
     }
   };
 
+  const getHistories = async () => {
+    try {
+      const { data, error } = await clientOfMarketplace(chainId)
+        .query(historyQuery, {})
+        .toPromise();
+
+      if (error) {
+        toast.error('Something went wrong with fetching your account info.');
+        return;
+      }
+      // return data;
+
+      const histories: NFTObject[] = await Promise.all(
+        data.histories?.map(async (history) => {
+          return {
+            id: history.id,
+            listingId: history.listingId,
+            quantity: history.quantity,
+            price: history.price,
+            paymentToken: history.paymentToken
+          };
+        }),
+      );
+      setHistories(histories);
+    } catch (error) {
+      toast.error('Something went wrong. Please try again.');
+      return;
+    }
+  };
+
   return (
     <Phase2Context.Provider
       value={{
@@ -956,6 +998,7 @@ const WithWalletPhase2 = ({ children }: Props) => {
         getOffers,
         listings,
         offers,
+        histories,
         // setNftApprove,
         buyItems,
         // setApprove,

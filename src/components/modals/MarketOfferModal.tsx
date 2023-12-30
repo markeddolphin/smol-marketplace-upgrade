@@ -347,7 +347,7 @@ export const MarketOfferModal = ({
                           handleUpdateList();
                         }}
                       >
-                        UPDATE LIST
+                        UPDATE LISTING
                       </button>
                     </>
                   ) : finalOffers.findIndex((offer) => offer.bidder == address) < 0 ? (

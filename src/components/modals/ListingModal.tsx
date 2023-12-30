@@ -162,7 +162,7 @@ export const ListingModal = ({
             >
               <Dialog.Panel className="relative w-full max-w-md overflow-hidden rounded-lg border-8 border-smolBrown bg-smolBrownAlternative p-3 text-gray-200">
                 <div className="mx-auto flex h-full flex-col justify-center p-2">
-                  <h2 className="my-2 uppercase">Make a new List</h2>
+                  <h2 className="my-2 uppercase">Make a new Listing</h2>
                   <form onSubmit={handleSubmit}>
                     <div className="my-3 grid grid-cols-5 gap-3">
                       {tokens.map((token, index) => {

@@ -35,6 +35,7 @@ export interface WalletContextData {
   getOffers: (_listingId: string) => Promise<void>;
   listings: NFTObject[];
   offers: NFTObject[];
+  histories: NFTObject[];
   cancelTokenBidForListing: (_listingId: string) => Promise<void>;
   acceptTokenBidForListing: (params: AcceptBidParamsStruct) => Promise<void>;
   refetchNFTs?: () => Promise<void>;
@@ -69,6 +70,7 @@ export const phase2ContextDefaults: WalletContextData = {
   getOffers: async () => Promise.resolve(),
   listings: [],
   offers: [],
+  histories: [],
   cancelTokenBidForListing: async () => Promise.resolve(),
   acceptTokenBidForListing: async () => Promise.resolve(),
   refetchNFTs: async () => Promise.resolve(),

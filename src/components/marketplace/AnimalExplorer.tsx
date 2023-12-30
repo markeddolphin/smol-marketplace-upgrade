@@ -5,6 +5,8 @@ import {
   SHOP,
   SMOL_AGE_ADDRESS,
   SMOL_AGE_BONES,
+  MAGIC_ADDRESS,
+  SMOL_AGE_SMOL,
   NFT_MARKET_PLACE,
 } from '@config';
 import { BigNumber, Contract, ethers } from 'ethers';
@@ -43,7 +45,7 @@ export const AnimalExplorer = () => {
   const listModal = useListingModal();
   const chainId = !chain || chain?.unsupported ? ARBITRUM : chain?.id;
 
-  const { nfts, listings, getListings } = useContext(Phase2Context);
+  const { nfts, listings, getListings, histories } = useContext(Phase2Context);
 
   const [selected, setSelected] = useState<BigNumber[]>();
   const [clicked, setClicked] = useState<BigNumber[]>();
@@ -53,6 +55,10 @@ export const AnimalExplorer = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(0);
   const [selectedOfferprice, setSelectedOfferprice] = useState(0);
   const [balance, setBalance] = useState(0);
+
+  const [bone, setBone] = useState(0);
+  const [smol, setSmol] = useState(0);
+  const [magic, setMagic] = useState(0);
   // const [activeExploreTab, setActiveExplorerTab] = useState<ExploreTab>(ExploreTab.All);
 
   const { data: signerData } = useSigner();
@@ -210,6 +216,26 @@ export const AnimalExplorer = () => {
                 ))}
               </div>
               <p className="text-center text-[10px]">All pricing is in $BONES</p>
+            
+              {histories.length == 0 ?
+                <div className="mt-2">
+                  <p className="text-right text-[10px]">BONES: {0}</p>
+                  <p className="text-right text-[10px]">SMOL: {0}</p>
+                  <p className="text-right text-[10px]">MAGIC: {0}</p>
+                </div>:
+                histories.map((history, i) => {
+                  <div className="mt-2" key={'history_' + i}>
+                    history.paymentToken == SMOL_AGE_BONES[chainId]
+                    ? setBone(bone + BigNumber.from(history.price).div(BigNumber.from(10).pow(BigNumber.from(8))).toNumber())
+                    : history.paymentToken == SMOL_AGE_SMOL[chainId]
+                    ? setSmol(smol + BigNumber.from(history.price).div(BigNumber.from(10).pow(BigNumber.from(8))).toNumber())
+                    : setMagic(magic + BigNumber.from(history.price).div(BigNumber.from(10).pow(BigNumber.from(8))).toNumber())
+ 
+                    <p className="text-right text-[10px]">BONES: {bone}</p>
+                    <p className="text-right text-[10px]">SMOL: {smol}</p>
+                    <p className="text-right text-[10px]">MAGIC: {magic}</p>
+                  </div>
+              })}
             </div>
 
             <div className="border-line mb-4 mt-6 grid max-h-[45vh] grid-cols-3 gap-4 overflow-y-auto pb-4 pt-4 sm:grid-cols-4 md:grid-cols-5">
